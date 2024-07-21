@@ -1,5 +1,5 @@
-#!/usr/bin/env sh
-# shellcheck shell=sh
+#!/usr/bin/env bsh
+# shellcheck shell=bash
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ##@Version           :  202308271918-git
 # @@Author           :  Jason Hempstead
@@ -25,11 +25,11 @@
 # shellcheck disable=SC2199
 # shellcheck disable=SC2317
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# BASH_SET_SAVED_OPTIONS=$(set +o)
-[ "$DEBUGGER" = "on" ] && echo "Enabling debugging" && set -x
+# setup debugging - https://www.gnu.org/software/bash/manual/html_node/The-Set-Builtin.html
+[ -f "/config/.debug" ] && [ -z "$DEBUGGER_OPTIONS" ] && export DEBUGGER_OPTIONS="$(cat "/config/.debug")" || DEBUGGER_OPTIONS="${DEBUGGER_OPTIONS:-}"
+{ [ "$DEBUGGER" = "on" ] || [ -f "/config/.debug" ]; } && echo "Enabling debugging" && set -xo pipefail -x$DEBUGGER_OPTIONS && export DEBUGGER="on" || set -o pipefail
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# Set default exit code
-INSTALL_SH_EXIT_STATUS=0
+# BASH_SET_SAVED_OPTIONS=$(set +o)
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # check for command
 __cmd_exists() { command "$1" >/dev/null 2>&1 || return 1; }
@@ -44,6 +44,9 @@ __get_version() { printf '%s\n' "${1:-$(cat "/dev/stdin")}" | awk -F. '{ printf(
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # custom functions
 
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# Set default exit code
+INSTALL_SH_EXIT_STATUS=0
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Define Variables
 EXPECTED_OS="alpine"
@@ -63,7 +66,10 @@ GIT_REPO="https://github.com/templatemgr/$TEMPLATE_NAME"
 OS_RELEASE="$(grep -si "$EXPECTED_OS" /etc/*-release* | sed 's|.*=||g;s|"||g' | head -n1)"
 [ -n "$OS_RELEASE" ] || { echo "Unexpected OS: ${OS_RELEASE:-N/A}" && exit 1; }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-[ "$TEMPLATE_NAME" != "sample-template" ] || { echo "Please set TEMPLATE_NAME" && exit 1; }
+# Custom env
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+[ "$TEMPLATE_NAME" != "sample-template" ] || { echo "Please set variable TEMPLATE_NAME" && exit 1; }
 git clone -q "$GIT_REPO" "$TMP_DIR" || { echo "Failed to clone the repo" exit 1; }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Main application
@@ -71,7 +77,8 @@ mkdir -p "$CONFIG_DIR" "$INIT_DIR"
 find "$TMP_DIR/" -iname '.gitkeep' -exec rm -f {} \;
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # custom pre execution commands
-
+[ -d "/usr/local/bin" ] || mkdir -p "/usr/local/bin"
+[ -d "/usr/local/etc/docker/functions" ] || mkdir -p "/usr/local/etc/docker/functions"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 get_dir_list="$(__find_directory_relative "$TMP_DIR/config" || false)"
 if [ -n "$get_dir_list" ]; then
@@ -118,6 +125,7 @@ fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 [ -d "$INIT_DIR" ] && chmod -Rf 755 "$INIT_DIR"/*.sh || true
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+[ -d "$TMP_DIR/functions" ] && cp -Rf "$TMP_DIR/functions/." "/usr/local/etc/docker/functions/" || true
 [ -d "$TMP_DIR/bin" ] && chmod -Rf 755 "$TMP_DIR/bin/" && cp -Rf "$TMP_DIR/bin/." "/usr/local/bin/" || true
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Other files to copy to system
