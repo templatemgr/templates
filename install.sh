@@ -50,16 +50,18 @@ INSTALL_SH_EXIT_STATUS=0
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Define Variables
 EXPECTED_OS="alpine"
-TEMPLATE_NAME="sample-template"
-CONFIG_CHECK_FILE=""
+TEMPLATE_NAME="php"
 OVER_WRITE_INIT="yes"
+CONFIG_DIR="/usr/local/share/template-files/config"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 TMP_DIR="/tmp/config-$TEMPLATE_NAME"
-CONFIG_DIR="/usr/local/share/template-files/config"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 WWW_ROOT_DIR="${WWW_ROOT_DIR:-/usr/share/httpd/default}"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 INIT_DIR="/usr/local/etc/docker/init.d"
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# Set this if a file should exist - comma seperated list
+CONFIG_CHECK_FILE=""
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 GIT_REPO="https://github.com/templatemgr/$TEMPLATE_NAME"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -134,11 +136,14 @@ fi
 # custom operations
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+CONFIG_CHECK_FILE="${CONFIG_CHECK_FILE//,/ }"
 if [ -n "$CONFIG_CHECK_FILE" ]; then
-  if [ ! -f "$CONFIG_DIR/$CONFIG_CHECK_FILE" ]; then
-    echo "Can not find a config file: $CONFIG_DIR$CONFIG_CHECK_FILE"
-    INSTALL_SH_EXIT_STATUS=1
-  fi
+  for config_file in $CONFIG_CHECK_FILE; do
+    if [ ! -f "$config_file" ]; then
+      echo "Can not find a config file: $config_file"
+      INSTALL_SH_EXIT_STATUS=1
+    fi
+  done
 else
   echo "CONFIG_CHECK_FILE not enabled"
 fi

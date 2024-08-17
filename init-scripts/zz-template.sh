@@ -139,7 +139,7 @@ IS_WEB_SERVER="no"
 IS_DATABASE_SERVICE="no"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Load variables from config
-[ -f "$CONF_DIR/env/templatemgr.sh" ] && . "$CONF_DIR/env/templatemgr.sh"
+[ -f "/config/env/templatemgr.sh" ] && . "/config/env/templatemgr.sh"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Additional predefined variables
 
@@ -601,9 +601,9 @@ else
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Change to working directory
-[ -n "$WORK_DIR" ] && [ -n "$EXEC_CMD_BIN" ] && [ "$PWD" != "$WORK_DIR" ] && __cd "$WORK_DIR" && echo "Changed to $PWD"
-[ -z "$WORK_DIR" ] && [ "$HOME" = "/root" ] && [ "$RUNAS_USER" != "root" ] && [ "$PWD" != "/tmp" ] && __cd "/tmp" && echo "Changed to $PWD"
-[ -z "$WORK_DIR" ] && [ "$HOME" = "/root" ] && [ "$SERVICE_USER" != "root" ] && [ "$PWD" != "/tmp" ] && __cd "/tmp" && echo "Changed to $PWD" && WORK_DIR="" || WORK_DIR="${WORK_DIR:-$PWD}"
+[ -n "$WORK_DIR" ] && [ -n "$EXEC_CMD_BIN" ] && [ "$PWD" != "$WORK_DIR" ] && __cd "$WORK_DIR" && echo "Setting the working directory to: $PWD"
+[ -z "$WORK_DIR" ] && [ "$HOME" = "/root" ] && [ "$RUNAS_USER" != "root" ] && [ "$PWD" != "/tmp" ] && __cd "/tmp" && echo "Setting the working directory to: $PWD"
+[ -z "$WORK_DIR" ] && [ "$HOME" = "/root" ] && [ "$SERVICE_USER" != "root" ] && [ "$PWD" != "/tmp" ] && __cd "/tmp" && echo "Setting the working directory to: $PWD" && WORK_DIR="" || WORK_DIR="${WORK_DIR:-$PWD}"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # show init message
 __pre_message
